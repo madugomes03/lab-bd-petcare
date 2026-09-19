@@ -1,4 +1,3 @@
-# lab-bd-petcare
 
 # Instituto PetCare
 
@@ -20,7 +19,7 @@ Gestão de ONGs de proteção e adoção animal — cadastro de animais resgatad
 
 - Maria Eduarda Gomes da Silva
 - Sarah Cruz Serpa
-- Vitor Lustosa Leão
+- Vitor Lustosa Leão Pinheiro
 - Victor Gabriel Andrade
 
 ## Estrutura do repositório

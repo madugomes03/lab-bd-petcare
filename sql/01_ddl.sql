@@ -284,7 +284,7 @@ CREATE TABLE Atuacao
     id_ong          INT NOT NULL,
     id_veterinario  INT NOT NULL,
     data_inicio     DATE NOT NULL,
-    data_fim        DATE NOT NULL,
+    data_fim        DATE NULL,
     CONSTRAINT pk_atuacao PRIMARY KEY (id_atuacao),
     CONSTRAINT fk_atuacao_ong FOREIGN KEY (id_ong) REFERENCES Ong(id_ong)
         ON DELETE CASCADE ON UPDATE CASCADE,

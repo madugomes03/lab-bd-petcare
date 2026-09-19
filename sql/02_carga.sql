@@ -399,16 +399,18 @@ INSERT INTO SituacaoAnimal (id_animal, registro, data_registro, motivo, status, 
 (40, 2, '2026-06-19 08:00:00', 'Continuidade do tratamento', 'Tratamento', '2026-06-19', NULL, 'Ainda em tratamento veterinário');
 
 -- =====================  ATUACAO (N:N Ong x Veterinario, com periodo)  =====================
+-- contorno: data_fim NULL = atuação ainda em vigor (sem data de encerramento);
+--           as atuações 6 e 8 já foram encerradas de fato e trazem data_fim real.
 INSERT INTO Atuacao (id_atuacao, id_ong, id_veterinario, data_inicio, data_fim) VALUES
-(1, 1, 9, '2025-06-01', '2026-12-31'),
-(2, 1, 10, '2025-06-01', '2026-12-31'),
-(3, 2, 11, '2025-06-01', '2026-12-31'),
-(4, 2, 12, '2025-06-01', '2026-12-31'),
-(5, 3, 9, '2025-06-01', '2026-12-31'),
-(6, 3, 12, '2025-06-01', '2026-12-31'),
-(7, 1, 11, '2025-08-01', '2026-12-31'),
-(8, 2, 9,  '2025-09-15', '2026-12-31'),
-(9, 3, 10, '2026-01-20', '2026-12-31');
+(1, 1, 9,  '2025-06-01', NULL),
+(2, 1, 10, '2025-06-01', NULL),
+(3, 2, 11, '2025-06-01', NULL),
+(4, 2, 12, '2025-06-01', NULL),
+(5, 3, 9,  '2025-06-01', NULL),
+(6, 3, 12, '2025-06-01', '2026-03-15'),
+(7, 1, 11, '2025-08-01', NULL),
+(8, 2, 9,  '2025-09-15', '2026-08-31'),
+(9, 3, 10, '2026-01-20', NULL);
 
 -- =====================  PATROCINIO (N:N Ong x Parceiro, com atributos - RN04/RN05)  =====================
 INSERT INTO Patrocinio (id_patrocinio, id_ong, id_parceiro, valor, data, tipo_apoio) VALUES
@@ -709,11 +711,3 @@ INSERT INTO pedidoAdocao (id_pedido, id_animal, id_adotante, id_adm_ong, data_pe
 (40, 22, 18, NULL, '2026-03-03 09:30:00', NULL, NULL, 'Em análise'),
 (41, 23, 19, NULL, '2026-03-10 09:30:00', NULL, NULL, 'Em análise'),
 (42, 24, 20, NULL, '2026-03-17 09:30:00', NULL, NULL, 'Em análise');
-
--- =====================================================================
--- Resumo da carga:
---   Pessoa 40 | Adotante 31 | Veterinario 4 | AdmOng 3 | AdmSistema 2
---   Ong 3 | Parceiro 12 | Animal 40 | Prontuario 40
---   SituacaoAnimal 119 | Consulta 70 | SolicitacaoExame 53
---   aplicacaoVacina 72 | Patrocinio 42 | Atuacao 9 | pedidoAdoção 42
--- =====================================================================

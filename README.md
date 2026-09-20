@@ -12,7 +12,7 @@ exames) e o fluxo completo de solicitação e avaliação de adoções.
 
 ## Tema
 
-Gestão de ONGs de proteção e adoção animal — cadastro de animais resgatados, controle de saúde
+Gestão de ONGs de proteção e adoção animal. Cadastro de animais resgatados, controle de saúde
 (prontuário, vacinas, exames), processo de adoção e patrocínio por parceiros.
 
 ## Integrantes

@@ -1,7 +1,7 @@
 -- =====================================================================
 -- 01_ddl.sql — Instituto PetCare
 -- Comentários associam os principais comandos às regras de negócio
--- (RN01–RN25) do documento A1.
+-- (RN01–RN27) do documento A1.
 -- =====================================================================
 
 DROP DATABASE IF EXISTS petcare_db;
@@ -33,7 +33,9 @@ CREATE TABLE Parceiro
     nome           VARCHAR(150) NOT NULL,
     tipo_parceiro  VARCHAR(50)  NOT NULL,
     CONSTRAINT pk_parceiro PRIMARY KEY (id_parceiro),
-    CONSTRAINT uq_parceiro_documento UNIQUE (documento)  -- RN17
+	CONSTRAINT uq_parceiro_documento UNIQUE (documento),  -- RN17
+    CONSTRAINT ck_parceiro_tipo CHECK (tipo_parceiro IN
+        ('Empresa', 'Pessoa Física', 'ONG Parceira'))  -- RN26
 ) ENGINE=InnoDB;
 
 CREATE TABLE TipoExame
@@ -84,8 +86,10 @@ CREATE TABLE Ong
     situacao_cadastro  VARCHAR(50)  NOT NULL DEFAULT 'Em análise',  -- RN24
     CONSTRAINT pk_ong PRIMARY KEY (id_ong),
     CONSTRAINT uq_ong_cnpj UNIQUE (cnpj),
-    CONSTRAINT fk_ong_admsistema FOREIGN KEY (id_adm_sistema) REFERENCES AdmSistema(id_pessoa)
-        ON DELETE SET NULL ON UPDATE CASCADE
+	CONSTRAINT fk_ong_admsistema FOREIGN KEY (id_adm_sistema) REFERENCES AdmSistema(id_pessoa)
+        ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT ck_ong_situacao CHECK (situacao_cadastro IN
+        ('Em análise', 'Validado', 'Recusado'))  -- RN24, RN26
 ) ENGINE=InnoDB;
 
 -- RN03: uma ONG pode ter vários admOng, mas cada admOng cuida de 1 ONG
@@ -170,8 +174,11 @@ CREATE TABLE Animal
     descricao        VARCHAR(500),
     status_atual     VARCHAR(50)  NOT NULL DEFAULT 'Tratamento',
     CONSTRAINT pk_animal PRIMARY KEY (id_animal),
-    CONSTRAINT fk_animal_ong FOREIGN KEY (id_ong) REFERENCES Ong(id_ong)  -- RN01, RN02
-        ON DELETE RESTRICT ON UPDATE CASCADE
+	CONSTRAINT fk_animal_ong FOREIGN KEY (id_ong) REFERENCES Ong(id_ong)  -- RN01, RN02
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT ck_animal_sexo CHECK (sexo IN ('M', 'F')),  -- RN26
+    CONSTRAINT ck_animal_status CHECK (status_atual IN
+        ('Tratamento', 'Disponível', 'Em Adoção', 'Adotado', 'Óbito'))  -- RN26
 ) ENGINE=InnoDB;
 
 -- RN19: data de nascimento do animal não pode ser futura (CHECK não é
@@ -230,7 +237,10 @@ CREATE TABLE SituacaoAnimal
     observacoes    VARCHAR(500),
     CONSTRAINT pk_situacaoanimal PRIMARY KEY (id_animal, registro),
     CONSTRAINT fk_situacaoanimal_animal FOREIGN KEY (id_animal) REFERENCES Animal(id_animal)  -- RN13
-        ON DELETE CASCADE ON UPDATE CASCADE
+        ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT ck_situacaoanimal_datas CHECK (data_fim IS NULL OR data_fim >= data_inicio),
+    CONSTRAINT ck_situacaoanimal_status CHECK (status IN
+        ('Tratamento', 'Disponível', 'Em Adoção', 'Adotado', 'Óbito'))  -- RN26
 ) ENGINE=InnoDB;
 
 -- RN14: consulta deve estar vinculada a um veterinário E a um prontuário
@@ -278,18 +288,24 @@ DELIMITER ;
 -- Tabelas Associativas
 -- -----------------------------------------------------
 
+-- RN27: um veterinário pode atuar em mais de uma ONG ao longo do tempo;
+--       cada atuação tem data de início e, quando encerrada, data de fim
+--       (NULL enquanto vigente)
+-- RN22: o vínculo vigente (data_fim NULL) é o que autoriza o veterinário
+--       a registrar e editar o prontuário dos animais da ONG (aplicação)
 CREATE TABLE Atuacao
 (
     id_atuacao      INT AUTO_INCREMENT,
-    id_ong          INT NOT NULL,
-    id_veterinario  INT NOT NULL,
-    data_inicio     DATE NOT NULL,
-    data_fim        DATE NULL,
+     id_ong          INT NOT NULL,   -- RN27
+    id_veterinario  INT NOT NULL,   -- RN27
+    data_inicio     DATE NOT NULL,  -- RN27: obrigatória
+    data_fim        DATE NULL,      -- RN27: NULL = atuação ainda vigente
     CONSTRAINT pk_atuacao PRIMARY KEY (id_atuacao),
     CONSTRAINT fk_atuacao_ong FOREIGN KEY (id_ong) REFERENCES Ong(id_ong)
         ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT fk_atuacao_veterinario FOREIGN KEY (id_veterinario) REFERENCES Veterinario(id_pessoa)
-        ON DELETE CASCADE ON UPDATE CASCADE
+        ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT ck_atuacao_datas CHECK (data_fim IS NULL OR data_fim >= data_inicio)
 ) ENGINE=InnoDB;
 
 -- RN04: patrocínio deve conter valor, data e tipo de apoio obrigatórios
@@ -410,10 +426,13 @@ END$$
 DELIMITER ;
 
 -- RN06: pedido avaliado por no máx. 1 admOng por vez (id_adm_ong opcional
---       no início, conforme RN06 — avaliação acontece depois)
+--       no início — a avaliação acontece depois)
+-- RN07: adotante com um único pedido "Em análise" por vez (aplicação)
 -- RN08: se recusado, parecer é obrigatório (CHECK abaixo)
--- RN09: data_decisao preenchida quando aprovado/recusado (reforçar via
---       trigger/aplicação, já que o valor em si depende do momento da ação)
+-- RN09: data_decisao preenchida quando aprovado/recusado (aplicação,
+--       na mesma operação que altera o status)
+-- RN10: só aprova se o animal estiver "Disponível" ou "Em Adoção" (aplicação)
+-- RN21: somente o admOng aprova ou recusa pedidos (aplicação, controle de perfil)
 CREATE TABLE pedidoAdocao
 (
     id_pedido       INT AUTO_INCREMENT,
@@ -431,8 +450,8 @@ CREATE TABLE pedidoAdocao
         ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_pedido_admong FOREIGN KEY (id_adm_ong) REFERENCES AdmOng(id_pessoa)  -- RN06
         ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT ck_pedido_parecer_se_recusado
-        CHECK (status_pedido <> 'Recusado' OR parecer IS NOT NULL)  -- RN08
+	CONSTRAINT ck_pedido_parecer_se_recusado CHECK (status_pedido <> 'Recusado' OR parecer IS NOT NULL),  -- RN08
+    CONSTRAINT ck_pedido_status CHECK (status_pedido IN ('Em análise', 'Aprovado', 'Recusado', 'Cancelado'))  -- RN26
 ) ENGINE=InnoDB;
 
 CREATE INDEX idx_animal_ong ON Animal(id_ong);

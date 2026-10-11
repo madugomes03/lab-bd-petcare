@@ -31,7 +31,7 @@ ORDER BY nome;
 
 SELECT id_consulta, id_prontuario, id_veterinario, data, diagnostico
 FROM Consulta
-WHERE data BETWEEN '2026-01-01' AND '2026-06-30'
+WHERE data BETWEEN '2026-01-01 00:00:00' AND '2026-06-30 23:59:59'
 ORDER BY data;
 
 -- ============================================================
@@ -134,20 +134,33 @@ ORDER BY quantidade_animais DESC;
 -- ============================================================
 -- CONSULTA 11 - AVANÇADA (EXISTS)
 -- Pergunta de negócio:
--- Quais animais já possuem pelo menos um pedido de adoção registrado?
+-- Quais veterinários mantêm vínculo vigente (RN27) com duas ou mais ONGs
+-- ao mesmo tempo, e quanto cada um já atendeu?
 
 SELECT
-    a.id_animal,
-    a.nome,
-    a.especie,
-    a.status_atual
-FROM Animal a
+    p.id_pessoa,
+    p.nome AS veterinario,
+    v.especialidade,
+    (SELECT COUNT(*)
+     FROM Atuacao a
+     WHERE a.id_veterinario = v.id_pessoa
+       AND a.data_fim IS NULL) AS ongs_vigentes,
+    (SELECT COUNT(*)
+     FROM Consulta c
+     WHERE c.id_veterinario = v.id_pessoa) AS total_consultas
+FROM Veterinario v
+INNER JOIN Pessoa p ON v.id_pessoa = p.id_pessoa
 WHERE EXISTS (
     SELECT 1
-    FROM pedidoAdocao p
-    WHERE p.id_animal = a.id_animal
+    FROM Atuacao a1
+    INNER JOIN Atuacao a2
+        ON a2.id_veterinario = a1.id_veterinario
+       AND a2.id_ong <> a1.id_ong
+    WHERE a1.id_veterinario = v.id_pessoa
+      AND a1.data_fim IS NULL
+      AND a2.data_fim IS NULL
 )
-ORDER BY a.nome;
+ORDER BY total_consultas DESC;
 
 -- ============================================================
 -- CONSULTA 12 - AVANÇADA (SUBCONSULTA CORRELACIONADA)
@@ -169,56 +182,86 @@ WHERE c.data = (
 ORDER BY c.id_prontuario;
 
 -- ============================================================
--- CONSULTA 13 - AVANÇADA
+-- CONSULTA 13 - AVANÇADA (NOT EXISTS + SUBCONSULTA)
 -- Pergunta de negócio:
--- Quais animais disponíveis para adoção ainda não receberam
--- nenhum pedido de adoção?
+-- Quais animais disponíveis estão sem nenhum pedido de adoção em análise,
+-- há quantos dias aguardam adoção e quantos pedidos anteriores já tiveram?
 
 SELECT
     a.id_animal,
-    a.nome,
+    a.nome AS animal,
     a.especie,
-    a.raca
+    o.nome AS ong,
+    DATEDIFF(CURDATE(), s.data_inicio) AS dias_disponivel,
+    (SELECT COUNT(*)
+     FROM pedidoAdocao p
+     WHERE p.id_animal = a.id_animal) AS pedidos_anteriores
 FROM Animal a
+INNER JOIN Ong o ON a.id_ong = o.id_ong
+INNER JOIN SituacaoAnimal s
+    ON s.id_animal = a.id_animal
+   AND s.status = 'Disponível'
+   AND s.data_fim IS NULL
 WHERE a.status_atual = 'Disponível'
-AND NOT EXISTS (
-    SELECT 1
-    FROM pedidoAdocao p
-    WHERE p.id_animal = a.id_animal
-)
-ORDER BY a.nome;
+  AND NOT EXISTS (
+      SELECT 1
+      FROM pedidoAdocao p
+      WHERE p.id_animal = a.id_animal
+        AND p.status_pedido = 'Em análise'
+  )
+ORDER BY dias_disponivel DESC;
 
 -- ============================================================
--- CONSULTA 14 - AVANÇADA
+-- CONSULTA 14 - AVANÇADA (AGREGAÇÃO COM COMPARAÇÃO ENTRE TABELAS)
 -- Pergunta de negócio:
--- Quais animais já receberam pelo menos uma aplicação de vacina?
+-- Quais animais disponíveis ou em adoção estão com o esquema vacinal
+-- incompleto (doses aplicadas menores que o total de doses da vacina)
+-- e quantas doses ainda faltam?
 
-SELECT DISTINCT
+SELECT
     a.id_animal,
-    a.nome,
-    a.especie,
-    a.raca
+    a.nome AS animal,
+    a.status_atual,
+    v.nome AS vacina,
+    COUNT(av.id_aplicacao) AS doses_aplicadas,
+    CAST(v.num_dose AS UNSIGNED) AS doses_previstas,
+    CAST(v.num_dose AS UNSIGNED) - COUNT(av.id_aplicacao) AS doses_faltantes,
+    MAX(av.data_aplicacao) AS ultima_aplicacao
 FROM Animal a
-INNER JOIN Prontuario p ON a.id_animal = p.id_animal
-INNER JOIN aplicacaoVacina av ON p.id_prontuario = av.id_prontuario
-ORDER BY a.nome;
+INNER JOIN Prontuario pr ON pr.id_animal = a.id_animal
+INNER JOIN aplicacaoVacina av ON av.id_prontuario = pr.id_prontuario
+INNER JOIN Vacina v ON v.id_vacina = av.id_vacina
+WHERE a.status_atual IN ('Disponível', 'Em Adoção')
+GROUP BY a.id_animal, a.nome, a.status_atual, v.id_vacina, v.nome, v.num_dose
+HAVING COUNT(av.id_aplicacao) < CAST(v.num_dose AS UNSIGNED)
+ORDER BY doses_faltantes DESC, a.nome;
 
 -- ============================================================
--- CONSULTA 15 - AVANÇADA
+-- CONSULTA 15 - AVANÇADA (AGREGAÇÃO CONDICIONAL + LEFT JOIN)
 -- Pergunta de negócio:
--- Quais animais disponíveis para adoção já passaram
--- por pelo menos uma consulta veterinária?
+-- Como está o fluxo de adoção de cada ONG: quantos pedidos recebeu em
+-- cada situação, qual a taxa de aprovação entre os pedidos já decididos
+-- e quantos dias, em média, leva até a decisão?
 
-SELECT DISTINCT
-    a.id_animal,
-    a.nome,
-    a.especie,
-    a.raca,
-    a.status_atual
-FROM Animal a
-INNER JOIN Prontuario p ON a.id_animal = p.id_animal
-INNER JOIN Consulta c ON p.id_prontuario = c.id_prontuario
-WHERE a.status_atual = 'Disponível'
-ORDER BY a.nome;
-
-
+SELECT
+    o.nome AS ong,
+    COUNT(p.id_pedido) AS total_pedidos,
+    COUNT(CASE WHEN p.status_pedido = 'Aprovado'   THEN 1 END) AS aprovados,
+    COUNT(CASE WHEN p.status_pedido = 'Recusado'   THEN 1 END) AS recusados,
+    COUNT(CASE WHEN p.status_pedido = 'Cancelado'  THEN 1 END) AS cancelados,
+    COUNT(CASE WHEN p.status_pedido = 'Em análise' THEN 1 END) AS em_analise,
+    ROUND(
+        100 * COUNT(CASE WHEN p.status_pedido = 'Aprovado' THEN 1 END)
+        / NULLIF(COUNT(CASE WHEN p.status_pedido IN ('Aprovado', 'Recusado') THEN 1 END), 0),
+        2
+    ) AS taxa_aprovacao_pct,
+    ROUND(
+        AVG(CASE WHEN p.status_pedido IN ('Aprovado', 'Recusado')
+                 THEN DATEDIFF(p.data_decisao, p.data_pedido) END),
+        1
+    ) AS dias_medios_ate_decisao
+FROM Ong o
+LEFT JOIN Animal a ON a.id_ong = o.id_ong
+LEFT JOIN pedidoAdocao p ON p.id_animal = a.id_animal
+GROUP BY o.id_ong, o.nome
+ORDER BY taxa_aprovacao_pct DESC;

@@ -45,7 +45,11 @@ INSERT INTO Pessoa (id_pessoa, cpf, nome, data_nascimento, endereco, telefone) V
 (37, '66777888037', 'Rodrigo Barreto Cunha', '1993-05-30', 'QN 08 Conjunto 12, Riacho Fundo, Brasília-DF', '(61) 93333-7777'),
 (38, '66777888038', 'Aline Castilho Prado', '1996-09-08', 'Quadra 4 Casa 18, Candangolândia, Brasília-DF', '(61) 93333-8888'),
 (39, '66777888039', 'Felipe Moraes Aguiar', '2001-02-14', 'Quadra 3 Conjunto B, Varjão, Brasília-DF', '(61) 93333-9999'),
-(40, '66777888040', 'Débora Ribeiro Xavier', '1990-10-20', 'Rua 8 Chacara 45, Vicente Pires, Brasília-DF', '(61) 92222-0000');
+(40, '66777888040', 'Débora Ribeiro Xavier', '1990-10-20', 'Rua 8 Chacara 45, Vicente Pires, Brasília-DF', '(61) 92222-0000'),
+(41, '77888999041', 'Helena Barbosa Cardoso', '1987-04-12', 'SQS 112 Bloco G, Asa Sul, Brasília-DF', '(61) 91111-0041'),
+(42, '77888999042', 'Thiago Moreira Leite', '1983-09-05', 'QNM 28 Casa 6, Ceilândia, Brasília-DF', '(61) 91111-0042'),
+(43, '77888999043', 'Beatriz Sampaio Neves', '1991-01-28', 'QI 10 Bloco A, Guará, Brasília-DF', '(61) 91111-0043'),
+(44, '77888999044', 'André Luiz Cavalcante', '1980-12-14', 'CLN 305 Bloco C, Asa Norte, Brasília-DF', '(61) 91111-0044');
 
 -- =====================  PARCEIRO  =====================
 INSERT INTO Parceiro (id_parceiro, documento, nome, tipo_parceiro) VALUES
@@ -94,9 +98,13 @@ INSERT INTO AdmSistema (id_pessoa, data_Admissao) VALUES
 -- =====================  ONG  =====================
 -- RN24: a ONG 3 ainda está 'Em análise' e sem administrador do sistema (contorno)
 INSERT INTO Ong (id_ong, id_adm_sistema, nome, cnpj, razao_social, email, endereco, telefone, data_cadastro, situacao_cadastro) VALUES
-(1, 1,    'Patas Amigas',               '11222333000144', 'Associação Patas Amigas',    'contato@patasamigas.org',     'QNM 12 Área Especial, Ceilândia, Brasília-DF', '(61) 3333-0001', '2025-02-01 10:00:00', 'Validado'),
-(2, 1,    'Abrigo Esperança Animal',    '22333444000155', 'Instituto Esperança Animal', 'contato@esperancaanimal.org', 'QNL 30 Lote 5, Taguatinga, Brasília-DF',       '(61) 3333-0002', '2025-04-10 10:00:00', 'Validado'),
-(3, NULL, 'Instituto Focinhos Felizes', '33444555000166', 'Instituto Focinhos Felizes', 'contato@focinhosfelizes.org', 'Quadra 8 Área Especial, Sobradinho-DF',        '(61) 3333-0003', '2026-01-05 10:00:00', 'Em análise');
+(1, 1,    'Patas Amigas',               '11222333000144', 'Associação Patas Amigas',       'contato@patasamigas.org',     'QNM 12 Área Especial, Ceilândia, Brasília-DF', '(61) 3333-0001', '2025-02-01 10:00:00', 'Validado'),
+(2, 1,    'Abrigo Esperança Animal',    '22333444000155', 'Instituto Esperança Animal',    'contato@esperancaanimal.org', 'QNL 30 Lote 5, Taguatinga, Brasília-DF',       '(61) 3333-0002', '2025-04-10 10:00:00', 'Validado'),
+(3, NULL, 'Instituto Focinhos Felizes', '33444555000166', 'Instituto Focinhos Felizes',    'contato@focinhosfelizes.org', 'Quadra 8 Área Especial, Sobradinho-DF',        '(61) 3333-0003', '2026-01-05 10:00:00', 'Em análise'),
+(4, 1, 'Lar Doce Lar',                  '44555666000100', 'Associação Lar Doce Lar',       'contato@lardocelar.org', 'Quadra 12 Área Especial, Gama, Brasília-DF',        '(61) 3333-0004', '2026-02-10 10:00:00', 'Validado'),
+(5, 2, 'Resgate Cerrado',               '55666777000100', 'Instituto Resgate Cerrado',     'contato@resgatecerrado.org', 'Setor Tradicional Quadra 7, Planaltina, Brasília-DF', '(61) 3333-0005', '2026-03-18 10:00:00', 'Validado'),
+(6, NULL, 'Projeto Quatro Patas',       '66777888000100', 'Associação Projeto Quatro Patas', 'contato@quatropatas.org', 'QR 305 Conjunto 4, Samambaia, Brasília-DF',           '(61) 3333-0006', '2026-06-02 10:00:00', 'Em análise'),
+(7, 2, 'Amigos do Bicho DF',            '77888999000100', 'Associação Amigos do Bicho',      'contato@amigosdobicho.org', 'SIA Trecho 3 Lote 20, SIA, Brasília-DF',            '(61) 3333-0007', '2026-04-05 10:00:00', 'Recusado');
 
 -- =====================  ADMONG (subclasse de Pessoa) - RN03  =====================
 INSERT INTO AdmOng (id_pessoa, id_ong, cargo) VALUES
@@ -109,7 +117,11 @@ INSERT INTO Veterinario (id_pessoa, id_supervisor, crmv, especialidade) VALUES
 (9,  NULL, 'CRMV-DF 01234', 'Clínica geral'),
 (11, NULL, 'CRMV-DF 09999', 'Ortopedia'),
 (10, 9,    'CRMV-DF 05678', 'Cirurgia'),
-(12, 11,   'CRMV-DF 04321', 'Dermatologia');
+(12, 11,   'CRMV-DF 04321', 'Dermatologia'),
+(41, 9,    'CRMV-DF 07811', 'Cardiologia'),
+(42, 11,   'CRMV-DF 08472', 'Anestesiologia'),
+(43, NULL, 'CRMV-GO 03321', 'Medicina felina'),
+(44, 10,   'CRMV-DF 06150', 'Oncologia');
 
 -- =====================  ADOTANTE (subclasse de Pessoa)  =====================
 INSERT INTO Adotante (id_pessoa, data_cadastro) VALUES
@@ -410,7 +422,11 @@ INSERT INTO Atuacao (id_atuacao, id_ong, id_veterinario, data_inicio, data_fim) 
 (6, 3, 12, '2025-06-01', '2026-03-15'),
 (7, 1, 11, '2025-08-01', NULL),
 (8, 2, 9,  '2025-09-15', '2026-08-31'),
-(9, 3, 10, '2026-01-20', NULL);
+(9, 3, 10, '2026-01-20', NULL),
+(10, 4, 41, '2026-02-15', NULL),
+(11, 4, 42, '2026-03-01', NULL),
+(12, 5, 43, '2026-03-25', NULL),
+(13, 5, 44, '2026-04-01', '2026-08-31');
 
 -- =====================  PATROCINIO (N:N Ong x Parceiro, com atributos - RN04/RN05)  =====================
 INSERT INTO Patrocinio (id_patrocinio, id_ong, id_parceiro, valor, data, tipo_apoio) VALUES

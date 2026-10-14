@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "macros.html" import celula %}
+{% block titulo %}Adoções{% endblock %}
+{% block conteudo %}
+<div class="cabecalho"><h1>Pedidos de adoção</h1></div>
+<p class="nota">Aprovar um pedido altera <strong>três tabelas numa única transação</strong>:
+  <code>pedidoAdocao</code>, <code>Animal</code> e <code>SituacaoAnimal</code>.</p>
+
+<section class="cartao">
+  <div class="cartao-topo"><p class="contador"><strong>{{ pendentes|length }}</strong> pedido(s) em análise</p></div>
+  <div class="rolagem rolagem-sempre">
+    <table>
+      <thead><tr><th>Pedido</th><th>Data</th><th>Animal</th><th>Situação do animal</th><th>ONG</th><th>Adotante</th><th class="col-acoes">Ações</th></tr></thead>
+      <tbody>
+        {% for p in pendentes %}
+          <tr>
+            <td>#{{ p.id_pedido }}</td><td>{{ p.data_pedido }}</td><td>{{ celula('nome', p.animal) }}</td>
+            <td>{{ celula('status_atual', p.status_atual) }}</td><td>{{ p.ong }}</td><td>{{ p.adotante }}</td>
+            <td class="col-acoes"><a class="botao pequeno" href="{{ url_for('adocoes.adocoes_avaliar', pk=p.id_pedido) }}">Avaliar</a>
+              <a class="link-suave" href="{{ url_for('crud.animais_historico', pk=p.id_animal) }}">Histórico</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="vazio">Nenhum pedido em análise.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="cartao">
+  <div class="cartao-topo"><p class="contador">Últimas decisões</p></div>
+  <div class="rolagem rolagem-sempre">
+    <table>
+      <thead><tr><th>Pedido</th><th>Decidido em</th><th>Animal</th><th>Situação do animal</th><th>Adotante</th><th>Decisão</th><th>Parecer</th></tr></thead>
+      <tbody>
+        {% for p in decididos %}
+          <tr>
+            <td>#{{ p.id_pedido }}</td><td>{{ p.data_decisao }}</td><td>{{ celula('nome', p.animal) }}</td>
+            <td>{{ celula('status_atual', p.status_atual) }}</td><td>{{ p.adotante }}</td>
+            <td>{{ celula('status_pedido', p.status_pedido) }}</td><td>{{ celula('parecer', p.parecer) }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="vazio">Nenhuma decisão registrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

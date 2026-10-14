@@ -1,0 +1,165 @@
+/* Instituto PetCare — estilo do painel (claro/escuro automático). */
+:root {
+  --fundo: #f4f5fa;
+  --cartao: #ffffff;
+  --texto: #1f2233;
+  --suave: #6b7088;
+  --borda: #e6e8f1;
+  --linha: #f0f1f7;
+  --marca: #5b4bdb;
+  --marca-fundo: #ece9ff;
+  --marca-texto: #ffffff;
+  --lateral: #ffffff;
+  --sombra: 0 1px 2px rgba(30, 34, 60, .05), 0 6px 20px rgba(30, 34, 60, .06);
+  --ok: #1d7a4b;      --ok-f: #e2f5ea;
+  --aviso: #a15c00;   --aviso-f: #fff1d6;
+  --info: #1f62c4;    --info-f: #e1edff;
+  --erro: #b3261e;    --erro-f: #fde8e6;
+  --neutro: #5d6275;  --neutro-f: #eceef5;
+  --av0: #5b4bdb; --av1: #1f9d6b; --av2: #d9822b; --av3: #d6447a; --av4: #2a8bd1; --av5: #8a5cd6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fundo: #14151f; --cartao: #1d1f2e; --texto: #e8e9f3; --suave: #9a9eb7;
+    --borda: #2c2f45; --linha: #25283b; --marca: #8f87ff; --marca-fundo: #2b2866;
+    --marca-texto: #14151f; --lateral: #191b29; --sombra: 0 1px 2px rgba(0,0,0,.4);
+    --ok: #6fdba3; --ok-f: #17382a; --aviso: #f3c16a; --aviso-f: #3d2e10;
+    --info: #8ab9ff; --info-f: #172c4d; --erro: #ff9c94; --erro-f: #43201e;
+    --neutro: #b4b8cf; --neutro-f: #2a2d41;
+    --av0: #7a6cf0; --av1: #2fb883; --av2: #e29a4a; --av3: #e0628f; --av4: #4aa3e6; --av5: #a07be0;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--fundo); color: var(--texto);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+a { color: var(--marca); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { background: var(--neutro-f); padding: 1px 6px; border-radius: 6px; font-size: .88em; }
+h1 { font-size: 1.5rem; margin: 0; }
+
+/* ---------- layout ---------- */
+.app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+.lateral {
+  background: var(--lateral); border-right: 1px solid var(--borda);
+  padding: 20px 14px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.marca { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem;
+  color: var(--texto); padding: 4px 8px 18px; }
+.marca:hover { text-decoration: none; }
+.logo { width: 34px; height: 34px; border-radius: 10px; background: var(--marca); color: var(--marca-texto);
+  display: grid; place-items: center; font-size: 18px; }
+.grupo { margin: 18px 8px 6px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--suave); font-weight: 600; }
+a.item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px;
+  color: var(--texto); font-weight: 500; }
+a.item:hover { background: var(--linha); text-decoration: none; }
+a.item.ativo { background: var(--marca-fundo); color: var(--marca); font-weight: 600; }
+.conteudo { padding: 28px 32px 48px; min-width: 0; max-width: 1280px; width: 100%; }
+
+.cabecalho { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.nota { color: var(--suave); margin: 4px 0 18px; }
+
+/* ---------- cartões ---------- */
+.cartao { background: var(--cartao); border: 1px solid var(--borda); border-radius: 16px;
+  box-shadow: var(--sombra); margin: 0 0 22px; }
+.cartao-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 20px; flex-wrap: wrap; }
+.contador { margin: 0; font-size: 1rem; }
+.busca { width: 260px; max-width: 100%; padding: 9px 12px; border: 1px solid var(--borda);
+  border-radius: 10px; background: var(--fundo); color: var(--texto); font: inherit; }
+.busca:focus, input:focus, select:focus, textarea:focus { outline: 2px solid var(--marca); outline-offset: 1px; }
+.rodape-cartao { margin: 0; padding: 12px 20px; color: var(--suave); font-size: .85rem; border-top: 1px solid var(--linha); }
+
+/* ---------- tabelas ---------- */
+.rolagem { overflow: visible; }
+.rolagem-sempre { overflow-x: auto; }
+@media (max-width: 900px) { .rolagem { overflow-x: auto; } }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 12px 12px; border-top: 1px solid var(--linha); vertical-align: middle; }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--suave); font-weight: 600; white-space: nowrap; }
+tbody tr:hover { background: var(--fundo); }
+tfoot th { font-size: .9rem; text-transform: none; letter-spacing: 0; color: var(--texto); background: var(--linha); }
+th:first-child, td:first-child { padding-left: 20px; }
+th:last-child, td:last-child { padding-right: 20px; }
+td { font-size: .93rem; }
+td:first-child { white-space: nowrap; }
+td.vazio { text-align: center; color: var(--suave); padding: 28px; }
+.col-acoes { text-align: right; white-space: nowrap; }
+
+/* ---------- pílulas de status ---------- */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; background: var(--neutro-f); color: var(--neutro); }
+.badge[data-s="Disponível"], .badge[data-s="Aprovado"], .badge[data-s="Validada"], .badge[data-s="Ativo"] { background: var(--ok-f); color: var(--ok); }
+.badge[data-s="Tratamento"], .badge[data-s="Em análise"], .badge[data-s="Pendente"] { background: var(--aviso-f); color: var(--aviso); }
+.badge[data-s="Em Adoção"] { background: var(--info-f); color: var(--info); }
+.badge[data-s="Adotado"] { background: var(--marca-fundo); color: var(--marca); }
+.badge[data-s="Recusado"], .badge[data-s="Óbito"] { background: var(--erro-f); color: var(--erro); }
+
+/* ---------- avatar ---------- */
+.pessoa { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  color: #fff; font-size: 14px; font-weight: 700; flex: none; background: var(--av0); }
+.avatar.av0 { background: var(--av0); } .avatar.av1 { background: var(--av1); }
+.avatar.av2 { background: var(--av2); } .avatar.av3 { background: var(--av3); }
+.avatar.av4 { background: var(--av4); } .avatar.av5 { background: var(--av5); }
+
+/* ---------- menu Ações ---------- */
+details.menu { position: relative; display: inline-block; text-align: left; }
+details.menu summary { list-style: none; cursor: pointer; padding: 7px 12px; border: 1px solid var(--borda);
+  border-radius: 10px; font-weight: 600; font-size: .88rem; background: var(--cartao); user-select: none; }
+details.menu summary::-webkit-details-marker { display: none; }
+details.menu[open] summary { background: var(--marca-fundo); color: var(--marca); border-color: transparent; }
+.menu-lista { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; min-width: 170px;
+  background: var(--cartao); border: 1px solid var(--borda); border-radius: 12px; box-shadow: 0 10px 30px rgba(20,22,40,.18);
+  padding: 6px; display: flex; flex-direction: column; }
+.menu-lista a, .menu-lista button { display: block; width: 100%; text-align: left; padding: 8px 10px; border-radius: 8px;
+  color: var(--texto); background: none; border: 0; font: inherit; cursor: pointer; }
+.menu-lista a:hover, .menu-lista button:hover { background: var(--linha); text-decoration: none; }
+.menu-lista .perigo { color: var(--erro); }
+.menu-lista form { margin: 0; }
+
+/* ---------- botões ---------- */
+.botao, button.botao { display: inline-block; background: var(--marca); color: var(--marca-texto); border: 0;
+  padding: 10px 18px; border-radius: 10px; font: inherit; font-weight: 600; cursor: pointer; }
+.botao:hover { filter: brightness(1.08); text-decoration: none; }
+.botao.claro { background: var(--marca-fundo); color: var(--marca); }
+.botao.pequeno { padding: 6px 12px; font-size: .88rem; }
+.link-suave { color: var(--suave); margin-left: 10px; font-size: .88rem; }
+
+/* ---------- painel ---------- */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 22px; }
+.cartao.kpi { padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; margin: 0; color: var(--texto); }
+.cartao.kpi:hover { text-decoration: none; border-color: var(--marca); }
+.kpi .rotulo { color: var(--suave); font-size: .85rem; }
+.kpi .valor { font-size: 1.7rem; font-weight: 700; white-space: nowrap; }
+.botoes-linha { display: flex; gap: 12px; flex-wrap: wrap; padding: 0 20px 20px; }
+
+/* ---------- avisos ---------- */
+.aviso { padding: 12px 16px; border-radius: 12px; margin: 0 0 18px; font-weight: 500; }
+.aviso.ok { background: var(--ok-f); color: var(--ok); }
+.aviso.erro { background: var(--erro-f); color: var(--erro); }
+
+/* ---------- formulários e filtros ---------- */
+.formulario, .filtros { background: var(--cartao); border: 1px solid var(--borda); border-radius: 16px;
+  box-shadow: var(--sombra); padding: 20px; margin: 0 0 22px; }
+.formulario { max-width: 720px; }
+.formulario label, .filtros label { display: block; margin-bottom: 14px; font-weight: 600; font-size: .9rem; }
+.filtros { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
+.filtros label { margin: 0; }
+input, select, textarea { width: 100%; margin-top: 5px; padding: 9px 12px; border: 1px solid var(--borda);
+  border-radius: 10px; background: var(--fundo); color: var(--texto); font: inherit; font-weight: 400; }
+input[type="checkbox"] { width: auto; margin-right: 8px; }
+.obrig { color: var(--erro); }
+.resumo { background: var(--cartao); border: 1px solid var(--borda); border-radius: 16px; padding: 16px 20px; margin-bottom: 18px; }
+.demo { background: var(--aviso-f); color: var(--aviso); padding: 12px 14px; border-radius: 12px; }
+
+/* ---------- responsivo ---------- */
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; }
+  .lateral { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--borda); }
+  .conteudo { padding: 20px 16px 40px; }
+  th, td { padding: 10px 10px; }
+}

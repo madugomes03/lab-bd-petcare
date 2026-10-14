@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "macros.html" import celula %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block conteudo %}
+<div class="cabecalho">
+  <h1>{{ titulo }}</h1>
+  <a class="botao" href="{{ url_for('crud.' ~ base ~ '_novo') }}">+ Novo</a>
+</div>
+
+<section class="cartao">
+  <div class="cartao-topo">
+    <p class="contador"><strong>{{ linhas|length }}</strong> registro(s) em {{ titulo }}</p>
+    <input type="search" id="busca" class="busca" placeholder="Buscar nesta lista…"
+           aria-label="Buscar nesta lista" autocomplete="off">
+  </div>
+  <div class="rolagem">
+    <table id="tabela">
+      <thead>
+        <tr>{% for chave, rotulo in colunas %}<th>{{ rotulo }}</th>{% endfor %}<th class="col-acoes">Ações</th></tr>
+      </thead>
+      <tbody>
+        {% for l in linhas %}
+          <tr>
+            {% for chave, rotulo in colunas %}<td>{{ celula(chave, l[chave]) }}</td>{% endfor %}
+            <td class="col-acoes">
+              <details class="menu">
+                <summary>Ações ▾</summary>
+                <div class="menu-lista">
+                  <a href="{{ url_for('crud.' ~ base ~ '_editar', pk=l[pk]) }}">✏️ Editar</a>
+                  {% if historico %}<a href="{{ url_for('crud.animais_historico', pk=l[pk]) }}">🕘 Histórico</a>{% endif %}
+                  <form method="post" action="{{ url_for('crud.' ~ base ~ '_excluir', pk=l[pk]) }}"
+                        onsubmit="return confirm('Excluir este registro?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="perigo">🗑 Excluir</button>
+                  </form>
+                </div>
+              </details>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="{{ colunas|length + 1 }}" class="vazio">Nenhum registro cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

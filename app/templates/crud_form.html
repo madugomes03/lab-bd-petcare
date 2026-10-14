@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block conteudo %}
+<h1>{{ titulo }}</h1>
+<form method="post" class="formulario">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  {% for c in campos %}
+    {% set v = valores.get(c.nome) %}
+    <label><span>{{ c.rotulo }}{% if c.obrig %} <span class="obrig">*</span>{% endif %}</span>
+      {% if c.tipo == 'select' %}
+        <select name="{{ c.nome }}" {{ 'required' if c.obrig }}>
+          <option value="">— selecione —</option>
+          {% for valor, texto in c.opcoes %}
+            <option value="{{ valor }}" {{ 'selected' if v is not none and v|string == valor|string }}>{{ texto }}</option>
+          {% endfor %}
+        </select>
+      {% elif c.tipo == 'textarea' %}
+        <textarea name="{{ c.nome }}" rows="3" {% if c.maxlength %}maxlength="{{ c.maxlength }}"{% endif %}>{{ v if v is not none else '' }}</textarea>
+      {% else %}
+        <input type="{{ c.tipo }}" name="{{ c.nome }}" value="{{ v if v is not none else '' }}"
+               {{ 'required' if c.obrig }}
+               {% if c.maxlength %}maxlength="{{ c.maxlength }}"{% endif %}
+               {% if c.inputmode %}inputmode="{{ c.inputmode }}"{% endif %}>
+      {% endif %}
+    </label>
+  {% endfor %}
+  <div class="botoes">
+    <button type="submit" class="botao">Salvar</button>
+    <a href="{{ url_for('crud.' ~ base ~ '_lista') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

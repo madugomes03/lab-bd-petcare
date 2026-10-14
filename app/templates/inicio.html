@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titulo %}Painel{% endblock %}
+{% block conteudo %}
+<div class="cabecalho"><h1>Painel</h1></div>
+<p class="nota">Resumo geral, lido da visão <code>vw_relatorio_ong</code>.</p>
+
+<div class="kpis">
+  <a class="cartao kpi" href="{{ url_for('crud.animais_lista') }}">
+    <span class="rotulo">Animais cadastrados</span><span class="valor">{{ t.animais }}</span>
+  </a>
+  <a class="cartao kpi" href="{{ url_for('consultas.consulta_animais', status='Disponível') }}">
+    <span class="rotulo">Disponíveis para adoção</span><span class="valor">{{ t.disponiveis }}</span>
+  </a>
+  <a class="cartao kpi" href="{{ url_for('consultas.consulta_animais', status='Adotado') }}">
+    <span class="rotulo">Adotados</span><span class="valor">{{ t.adotados }}</span>
+  </a>
+  <a class="cartao kpi" href="{{ url_for('adocoes.adocoes_lista') }}">
+    <span class="rotulo">Pedidos em análise</span><span class="valor">{{ t.pedidos_em_analise }}</span>
+  </a>
+  <a class="cartao kpi" href="{{ url_for('crud.patrocinios_lista') }}">
+    <span class="rotulo">Patrocínio recebido</span><span class="valor">R$ {{ '%.2f'|format(t.patrocinio|float)|replace('.', ',') }}</span>
+  </a>
+</div>
+
+<section class="cartao atalhos">
+  <div class="cartao-topo"><p class="contador">Atalhos</p></div>
+  <div class="botoes-linha">
+    <a class="botao" href="{{ url_for('adocoes.adocoes_lista') }}">Avaliar pedidos de adoção</a>
+    <a class="botao claro" href="{{ url_for('crud.animais_novo') }}">+ Cadastrar animal</a>
+    <a class="botao claro" href="{{ url_for('consultas.relatorio') }}">Ver relatório por ONG</a>
+  </div>
+</section>
+{% endblock %}

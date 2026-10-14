@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "macros.html" import filtro_select, tabela %}
+{% block titulo %}Atendimentos{% endblock %}
+{% block conteudo %}
+<h1>Consulta: atendimentos veterinários</h1>
+<p class="nota">Junção de Consulta, Veterinário, Pessoa, Prontuário, Animal e ONG, com contagem por veterinário e ONG.
+  O período inclui o dia final inteiro.</p>
+<form method="get" class="filtros">
+  {{ filtro_select('id_veterinario', 'Veterinário', veterinarios, f.id_veterinario) }}
+  {{ filtro_select('id_ong', 'ONG do animal', ongs, f.id_ong) }}
+  <label>De <input type="date" name="data_ini" value="{{ f.data_ini or '' }}"></label>
+  <label>Até <input type="date" name="data_fim" value="{{ f.data_fim or '' }}"></label>
+  <label>Mín. de consultas <input type="number" name="min_consultas" min="0" value="{{ f.min_consultas }}"></label>
+  <div class="botoes"><button type="submit" class="botao">Filtrar</button>
+    <a href="{{ url_for('consultas.consulta_atendimentos') }}">Limpar</a></div>
+</form>
+{{ tabela(colunas, linhas) }}
+{% endblock %}

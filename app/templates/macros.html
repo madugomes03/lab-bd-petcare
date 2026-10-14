@@ -1,0 +1,41 @@
+{# Célula de tabela: NULL vira "—", situações viram selos coloridos e nomes ganham um avatar com a inicial. #}
+{% macro celula(chave, valor) -%}
+  {%- if valor is none -%}<span class="vazio">—</span>
+  {%- elif chave in ('status_atual', 'situacao_cadastro', 'status_pedido', 'status') -%}
+    <span class="badge" data-s="{{ valor }}">{{ valor }}</span>
+  {%- elif chave == 'nome' -%}
+    {%- set inicial = (valor|string)[0] -%}
+    <span class="pessoa"><span class="avatar av{{ 'abcdefghijklmnopqrstuvwxyz'.find(inicial|lower) % 6 }}" aria-hidden="true">{{ inicial|upper }}</span><span>{{ valor }}</span></span>
+  {%- else -%}{{ valor }}{%- endif -%}
+{%- endmacro %}
+
+{# Campo <select> de filtro (método GET). #}
+{% macro filtro_select(nome, rotulo, opcoes, atual) %}
+  <label>{{ rotulo }}
+    <select name="{{ nome }}">
+      <option value="">Todos</option>
+      {% for v, t in opcoes %}
+        <option value="{{ v }}" {{ 'selected' if atual is not none and atual|string == v|string }}>{{ t }}</option>
+      {% endfor %}
+    </select>
+  </label>
+{% endmacro %}
+
+{# Tabela de resultados (consultas e histórico), dentro de um cartão. #}
+{% macro tabela(colunas, linhas) %}
+  <section class="cartao">
+    <div class="rolagem rolagem-sempre">
+      <table>
+        <thead><tr>{% for chave, rotulo in colunas %}<th>{{ rotulo }}</th>{% endfor %}</tr></thead>
+        <tbody>
+          {% for l in linhas %}
+            <tr>{% for chave, rotulo in colunas %}<td>{{ celula(chave, l[chave]) }}</td>{% endfor %}</tr>
+          {% else %}
+            <tr><td colspan="{{ colunas|length }}" class="vazio">Nenhum resultado para os filtros informados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="rodape-cartao">{{ linhas|length }} linha(s).</p>
+  </section>
+{% endmacro %}

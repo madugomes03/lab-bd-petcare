@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "macros.html" import celula %}
+{% block titulo %}Relatório{% endblock %}
+{% block conteudo %}
+<div class="cabecalho"><h1>Relatório consolidado por ONG</h1></div>
+<p class="nota">Dados lidos da visão <code>vw_relatorio_ong</code>, criada no banco (<code>sql/04_views.sql</code>).</p>
+<section class="cartao">
+  <div class="rolagem rolagem-sempre">
+    <table>
+      <thead><tr>{% for chave, rotulo in colunas %}<th>{{ rotulo }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        {% for l in linhas %}
+          <tr>{% for chave, rotulo in colunas %}<td>{{ celula(chave, l[chave]) }}</td>{% endfor %}</tr>
+        {% else %}
+          <tr><td colspan="{{ colunas|length }}" class="vazio">Sem dados.</td></tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colspan="2">Total geral</th>
+          <th>{{ totais.total_animais }}</th><th>{{ totais.disponiveis }}</th><th>{{ totais.adotados }}</th>
+          <th>{{ totais.pedidos_em_analise }}</th><th>{{ totais.pedidos_aprovados }}</th>
+          <th>—</th><th>{{ totais.total_patrocinio }}</th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</section>
+{% endblock %}

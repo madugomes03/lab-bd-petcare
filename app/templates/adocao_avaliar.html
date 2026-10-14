@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "macros.html" import celula %}
+{% block titulo %}Avaliar pedido #{{ pedido.id_pedido }}{% endblock %}
+{% block conteudo %}
+
+<h1>Avaliar pedido #{{ pedido.id_pedido }}</h1>
+
+<dl class="resumo">
+  <dt>Animal</dt><dd>{{ pedido.animal }} {{ celula('status_atual', pedido.status_atual) }}</dd>
+  <dt>ONG</dt><dd>{{ pedido.ong }}</dd>
+  <dt>Adotante</dt><dd>{{ pedido.adotante }}</dd>
+  <dt>Pedido feito em</dt><dd>{{ pedido.data_pedido }}</dd>
+  <dt>Situação do pedido</dt><dd>{{ celula('status_pedido', pedido.status_pedido) }}</dd>
+</dl>
+
+<form method="post" class="formulario">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <label><span>Administrador da ONG que avalia <span class="obrig">*</span></span>
+    <select name="id_adm_ong" required>
+      <option value="">— selecione —</option>
+      {% for valor, texto in avaliadores %}
+        <option value="{{ valor }}" {{ 'selected' if valores.get('id_adm_ong')|string == valor|string }}>{{ texto }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label><span>Decisão <span class="obrig">*</span></span>
+    <select name="decisao" required>
+      <option value="aprovar" {{ 'selected' if valores.get('decisao') == 'aprovar' }}>Aprovar adoção</option>
+      <option value="recusar" {{ 'selected' if valores.get('decisao') == 'recusar' }}>Recusar pedido</option>
+    </select>
+  </label>
+  <label><span>Parecer <span class="dica">(obrigatório para recusar — RN08)</span></span>
+    <textarea name="parecer" rows="3" maxlength="500">{{ valores.get('parecer') or '' }}</textarea>
+  </label>
+  {% if demo_falha %}
+    <label class="demo"><input type="checkbox" name="simular_falha" value="1">
+      Simular falha no meio da transação (demonstração de ROLLBACK)</label>
+  {% endif %}
+  <div class="botoes">
+    <button type="submit" class="botao">Confirmar decisão</button>
+    <a href="{{ url_for('adocoes.adocoes_lista') }}">Voltar</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% from "macros.html" import tabela %}
+{% block titulo %}Histórico de {{ animal.nome }}{% endblock %}
+{% block conteudo %}
+<h1>Histórico de situação: {{ animal.nome }}</h1>
+<p class="nota">Cada mudança de situação encerra o registro aberto e cria um novo (RN12).</p>
+{{ tabela(colunas, linhas) }}
+<p><a href="{{ url_for('crud.animais_lista') }}">← Voltar aos animais</a></p>
+{% endblock %}

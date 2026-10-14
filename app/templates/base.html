@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Instituto PetCare{% endblock %} · PetCare</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+{% set ep = request.endpoint or '' %}
+<div class="app">
+  <aside class="lateral">
+    <a class="marca" href="{{ url_for('inicio') }}"><span class="logo">🐾</span><span>PetCare</span></a>
+    <nav aria-label="Menu principal">
+      <a class="item {{ 'ativo' if ep == 'inicio' }}" href="{{ url_for('inicio') }}"><span class="ic">🏠</span>Painel</a>
+
+      <p class="grupo">Cadastros</p>
+      <a class="item {{ 'ativo' if ep.startswith('crud.animais') }}" href="{{ url_for('crud.animais_lista') }}"><span class="ic">🐶</span>Animais</a>
+      <a class="item {{ 'ativo' if ep.startswith('crud.ongs') }}" href="{{ url_for('crud.ongs_lista') }}"><span class="ic">🏢</span>ONGs</a>
+      <a class="item {{ 'ativo' if ep.startswith('crud.parceiros') }}" href="{{ url_for('crud.parceiros_lista') }}"><span class="ic">🤝</span>Parceiros</a>
+      <a class="item {{ 'ativo' if ep.startswith('crud.patrocinios') }}" href="{{ url_for('crud.patrocinios_lista') }}"><span class="ic">💰</span>Patrocínios</a>
+
+      <p class="grupo">Operação</p>
+      <a class="item {{ 'ativo' if ep.startswith('adocoes.') }}" href="{{ url_for('adocoes.adocoes_lista') }}"><span class="ic">📋</span>Adoções</a>
+
+      <p class="grupo">Consultas</p>
+      <a class="item {{ 'ativo' if ep == 'consultas.consulta_animais' }}" href="{{ url_for('consultas.consulta_animais') }}"><span class="ic">🔍</span>Animais e pedidos</a>
+      <a class="item {{ 'ativo' if ep == 'consultas.consulta_atendimentos' }}" href="{{ url_for('consultas.consulta_atendimentos') }}"><span class="ic">🩺</span>Atendimentos</a>
+      <a class="item {{ 'ativo' if ep == 'consultas.relatorio' }}" href="{{ url_for('consultas.relatorio') }}"><span class="ic">📊</span>Relatório</a>
+    </nav>
+  </aside>
+
+  <main class="conteudo">
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% for categoria, texto in mensagens %}
+        <div class="aviso {{ categoria }}" role="alert">{{ texto }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block conteudo %}{% endblock %}
+  </main>
+</div>
+</body>
+</html>

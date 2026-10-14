@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "macros.html" import filtro_select, tabela %}
+{% block titulo %}Animais e pedidos{% endblock %}
+{% block conteudo %}
+<h1>Consulta: animais e pedidos de adoção</h1>
+<p class="nota">Junção de Animal, ONG e pedidos de adoção, agrupada por animal. Os filtros são parâmetros da consulta.</p>
+<form method="get" class="filtros">
+  {{ filtro_select('id_ong', 'ONG', ongs, f.id_ong) }}
+  {{ filtro_select('especie', 'Espécie', especies, f.especie) }}
+  {{ filtro_select('status', 'Situação', status, f.status) }}
+  <label>Nome contém <input type="text" name="nome" value="{{ f.nome or '' }}" maxlength="100"></label>
+  <label>Mín. de pedidos <input type="number" name="min_pedidos" min="0" value="{{ f.min_pedidos }}"></label>
+  <div class="botoes"><button type="submit" class="botao">Filtrar</button>
+    <a href="{{ url_for('consultas.consulta_animais') }}">Limpar</a></div>
+</form>
+{{ tabela(colunas, linhas) }}
+{% endblock %}

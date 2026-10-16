@@ -2,9 +2,7 @@
 {% from "macros.html" import celula %}
 {% block titulo %}Avaliar pedido #{{ pedido.id_pedido }}{% endblock %}
 {% block conteudo %}
-
 <h1>Avaliar pedido #{{ pedido.id_pedido }}</h1>
-
 <dl class="resumo">
   <dt>Animal</dt><dd>{{ pedido.animal }} {{ celula('status_atual', pedido.status_atual) }}</dd>
   <dt>ONG</dt><dd>{{ pedido.ong }}</dd>
@@ -13,7 +11,8 @@
   <dt>Situação do pedido</dt><dd>{{ celula('status_pedido', pedido.status_pedido) }}</dd>
 </dl>
 
-<form method="post" class="formulario">
+<form method="post" class="formulario" data-confirmar-decisao
+      data-pedido="{{ pedido.id_pedido }}" data-animal="{{ pedido.animal }}">
   <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
   <label><span>Administrador da ONG que avalia <span class="obrig">*</span></span>
     <select name="id_adm_ong" required>

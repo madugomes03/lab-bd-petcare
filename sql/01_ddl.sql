@@ -458,3 +458,104 @@ CREATE INDEX idx_animal_ong ON Animal(id_ong);
 CREATE INDEX idx_consulta_veterinario ON Consulta(id_veterinario);
 CREATE INDEX idx_pedido_animal ON pedidoAdocao(id_animal);
 CREATE INDEX idx_pedido_adotante ON pedidoAdocao(id_adotante);
+
+-- =====================================================================
+-- B6 — Gatilhos e auditoria
+-- =====================================================================
+
+-- -----------------------------------------------------
+-- Tabela de auditoria
+-- -----------------------------------------------------
+
+-- Justificativa de domínio:
+/*
+	Animal.status_atual: define se o animal pode ser adotado (RN10) e, 
+    pela RN23, animal adotado nunca é excluído, só muda de status.
+	Saber quem marcou "Adotado"/"Óbito" e quando é a rastreabilidade.
+
+	pedidoAdocao.status_pedido, parecer, id_adm_ong: é a decisão mais sensível do sistema pelas RN06, RN08, RN21. 
+    Prova quem decidiu, quando, e que o parecer não foi alterado depois.
+	Não auditados: nome, raca, descricao pois mudam sempre, sem efeito jurídico/operacional, e SituacaoAnimal já é histórico datado, RN12.
+*/
+CREATE TABLE Auditoria
+(
+    id_auditoria INT NOT NULL AUTO_INCREMENT,
+    tabela VARCHAR(50) NOT NULL,
+    id_registro INT NOT NULL,	-- PK do registro alterado
+    operacao VARCHAR(10) NOT NULL,
+    campo VARCHAR(50) NOT NULL,
+    valor_anterior VARCHAR(500) NULL,
+    valor_posterior VARCHAR(500) NULL,
+    autor VARCHAR(100) NOT NULL,	-- usuário da aplicação (ou do banco)
+    data_hora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT pk_auditoria PRIMARY KEY (id_auditoria),
+    CONSTRAINT ck_auditoria_operacao CHECK (operacao IN ('INSERT', 'UPDATE', 'DELETE'))
+) ENGINE=InnoDB;
+
+-- Para comparação dos registros modificados
+CREATE INDEX idx_auditoria_tabela_registro ON Auditoria (tabela, id_registro, data_hora);
+
+DELIMITER $$
+
+/* Observações:
+	- AFTER: só registra o que o banco realmente aceitou.
+	- <=> é a comparação NULL-safe do MySQL.
+	- Autor: variável de sessão @usuario_app (definida pela aplicação), se ausente, usa o usuário do banco.
+*/
+
+
+-- GATILHO 1: alterações relevantes em Animal (RN10, RN12, RN23)
+CREATE TRIGGER trg_animal_audita_update
+AFTER UPDATE ON Animal
+FOR EACH ROW
+BEGIN
+    DECLARE v_autor VARCHAR(100);
+    SET v_autor = COALESCE(@usuario_app, CURRENT_USER());
+
+    IF NOT (OLD.status_atual <=> NEW.status_atual) THEN
+        INSERT INTO Auditoria (tabela, id_registro, operacao, campo,
+                               valor_anterior, valor_posterior, autor)
+        VALUES ('Animal', OLD.id_animal, 'UPDATE', 'status_atual',
+                OLD.status_atual, NEW.status_atual, v_autor);
+    END IF;
+
+    IF NOT (OLD.id_ong <=> NEW.id_ong) THEN
+        INSERT INTO Auditoria (tabela, id_registro, operacao, campo,
+                               valor_anterior, valor_posterior, autor)
+        VALUES ('Animal', OLD.id_animal, 'UPDATE', 'id_ong',
+                CAST(OLD.id_ong AS CHAR), CAST(NEW.id_ong AS CHAR), v_autor);
+    END IF;
+END$$
+
+-- GATILHO 2: decisão sobre pedidos de adoção (RN06, RN08, RN09, RN21)
+CREATE TRIGGER trg_pedido_audita_update
+AFTER UPDATE ON pedidoAdocao
+FOR EACH ROW
+BEGIN
+    DECLARE v_autor VARCHAR(100);
+    SET v_autor = COALESCE(@usuario_app, CURRENT_USER());
+
+    IF NOT (OLD.status_pedido <=> NEW.status_pedido) THEN
+        INSERT INTO Auditoria (tabela, id_registro, operacao, campo,
+                               valor_anterior, valor_posterior, autor)
+        VALUES ('pedidoAdocao', OLD.id_pedido, 'UPDATE', 'status_pedido',
+                OLD.status_pedido, NEW.status_pedido, v_autor);
+    END IF;
+
+    IF NOT (OLD.parecer <=> NEW.parecer) THEN
+        INSERT INTO Auditoria (tabela, id_registro, operacao, campo,
+                               valor_anterior, valor_posterior, autor)
+        VALUES ('pedidoAdocao', OLD.id_pedido, 'UPDATE', 'parecer',
+                OLD.parecer, NEW.parecer, v_autor);
+    END IF;
+
+    IF NOT (OLD.id_adm_ong <=> NEW.id_adm_ong) THEN
+        INSERT INTO Auditoria (tabela, id_registro, operacao, campo,
+                               valor_anterior, valor_posterior, autor)
+        VALUES ('pedidoAdocao', OLD.id_pedido, 'UPDATE', 'id_adm_ong',
+                CAST(OLD.id_adm_ong AS CHAR), CAST(NEW.id_adm_ong AS CHAR), v_autor);
+    END IF;
+END$$
+
+DELIMITER ;

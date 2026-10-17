@@ -469,11 +469,10 @@ CREATE INDEX idx_pedido_adotante ON pedidoAdocao(id_adotante);
 
 -- Justificativa de domínio:
 /*
-	Animal.status_atual: define se o animal pode ser adotado (RN10) e, 
-    pela RN23, animal adotado nunca é excluído, só muda de status.
-	Saber quem marcou "Adotado"/"Óbito" e quando é a rastreabilidade.
+	Animal.status_atual: RN10, RN23.
+	Mostra quem marcou "Adotado"/"Óbito" e quando.
 
-	pedidoAdocao.status_pedido, parecer, id_adm_ong: é a decisão mais sensível do sistema pelas RN06, RN08, RN21. 
+	pedidoAdocao.status_pedido, parecer, id_adm_ong: RN06, RN08, RN21. 
     Prova quem decidiu, quando, e que o parecer não foi alterado depois.
 	Não auditados: nome, raca, descricao pois mudam sempre, sem efeito jurídico/operacional, e SituacaoAnimal já é histórico datado, RN12.
 */
@@ -518,13 +517,6 @@ BEGIN
                                valor_anterior, valor_posterior, autor)
         VALUES ('Animal', OLD.id_animal, 'UPDATE', 'status_atual',
                 OLD.status_atual, NEW.status_atual, v_autor);
-    END IF;
-
-    IF NOT (OLD.id_ong <=> NEW.id_ong) THEN
-        INSERT INTO Auditoria (tabela, id_registro, operacao, campo,
-                               valor_anterior, valor_posterior, autor)
-        VALUES ('Animal', OLD.id_animal, 'UPDATE', 'id_ong',
-                CAST(OLD.id_ong AS CHAR), CAST(NEW.id_ong AS CHAR), v_autor);
     END IF;
 END$$
 

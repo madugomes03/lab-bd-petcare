@@ -5,6 +5,16 @@ from erros import ErroNegocio
 STATUS_INICIAL = "Tratamento"
 
 
+def _definir_autor(tx, id_pessoa, nome):
+    """Auditoria (B6): informa aos gatilhos QUEM está fazendo a alteração.
+
+    Os gatilhos trg_animal_audita_update e trg_pedido_audita_update leem a variável de sessão
+    @usuario_app. Há uma conexão por requisição (fechada ao final), então o valor não vaza
+    para outra pessoa.
+    """
+    tx.executar("SET @usuario_app = %s", (f"{nome} (admOng #{id_pessoa})",))
+
+
 def _registrar_mudanca_situacao(tx, id_animal, novo_status, motivo):
     """RN12: toda mudança de situação encerra o histórico aberto e cria um novo registro."""
     tx.executar(
@@ -52,7 +62,7 @@ def atualizar_animal(id_animal, d):
     """Edita o animal; se a situação mudou, grava também o histórico (RN12)."""
     with db.transacao() as tx:
         atual = tx.um(
-            """SELECT a.status_atual, o.situacao_cadastro
+            """SELECT a.status_atual, a.id_ong, o.situacao_cadastro
                  FROM Animal a JOIN Ong o ON o.id_ong = a.id_ong
                 WHERE a.id_animal = %s
                   FOR UPDATE""",
@@ -60,6 +70,18 @@ def atualizar_animal(id_animal, d):
         )
         if atual is None:
             raise ErroNegocio("Animal não encontrado.")
+        try:
+            id_resp = int(d.get("responsavel"))
+        except (TypeError, ValueError):
+            id_resp = None
+        resp = tx.um(
+            """SELECT pe.nome FROM AdmOng ad JOIN Pessoa pe ON pe.id_pessoa = ad.id_pessoa
+                WHERE ad.id_pessoa = %s AND ad.id_ong = %s""",
+            (id_resp, atual["id_ong"]),
+        )
+        if resp is None:
+            raise ErroNegocio("Selecione o administrador da ONG responsável por esta alteração (auditoria).")
+        _definir_autor(tx, id_resp, resp["nome"])
         publicando = d["status_atual"] in ("Disponível", "Em Adoção")
         if publicando and atual["situacao_cadastro"] != "Validado":
             raise ErroNegocio("RN24: a ONG ainda não foi validada, então seus animais não podem ser publicados.")
@@ -110,9 +132,14 @@ def decidir_pedido(id_pedido, decisao, id_adm_ong, parecer, simular_falha=False)
         if pedido["status_pedido"] != "Em análise":
             raise ErroNegocio("Este pedido já foi decidido por outra pessoa.")
 
-        avaliador = tx.um("SELECT id_ong FROM AdmOng WHERE id_pessoa = %s", (id_adm_ong,))
+        avaliador = tx.um(
+            """SELECT ad.id_ong, pe.nome FROM AdmOng ad JOIN Pessoa pe ON pe.id_pessoa = ad.id_pessoa
+                WHERE ad.id_pessoa = %s""",
+            (id_adm_ong,),
+        )
         if avaliador is None or avaliador["id_ong"] != pedido["id_ong"]:
             raise ErroNegocio("RN06/RN21: o avaliador precisa ser administrador da ONG responsável pelo animal.")
+        _definir_autor(tx, id_adm_ong, avaliador["nome"])  # autor da auditoria (B6)
 
         if decisao == "recusar":
             # RN08 (parecer obrigatório) é garantida pelo CHECK do banco: se o parecer vier

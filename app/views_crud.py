@@ -28,7 +28,7 @@ def _form_pagina(titulo, base, campos, valores, edicao):
 
 
 # ====================================================================== Animal
-def _campos_animal(edicao):
+def _campos_animal(edicao, id_ong=None):
     campos = []
     if not edicao:
         campos.append(campo("id_ong", "ONG responsável", "select", True, repo.opcoes_ongs()))
@@ -44,6 +44,8 @@ def _campos_animal(edicao):
         campos += [
             campo("status_atual", "Situação", "select", True, STATUS_ANIMAL),
             campo("motivo_situacao", "Motivo da mudança de situação (se alterar)", maxlength=255),
+            campo("responsavel", "Responsável pela alteração (registrado na auditoria)", "select", True,
+                  repo.avaliadores_da_ong(id_ong)),
         ]
     return campos
 
@@ -73,7 +75,7 @@ def animais_editar(pk):
     animal = repo.obter_animal(pk)
     if animal is None:
         abort(404)
-    campos = _campos_animal(True)
+    campos = _campos_animal(True, animal["id_ong"])
     if request.method == "POST":
         dados = ler_form(campos)
         if tentar(lambda: servicos.atualizar_animal(pk, dados), "Animal atualizado."):

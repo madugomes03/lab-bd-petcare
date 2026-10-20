@@ -1,6 +1,6 @@
 -- =====================================================================
 
--- seguranca.controle.sql - Instituto PetCare
+-- B5_seguranca.controle.sql - Instituto PetCare
 
 -- B5: Segurança e controle de acesso
 

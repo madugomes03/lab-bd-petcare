@@ -460,7 +460,7 @@ CREATE INDEX idx_pedido_animal ON pedidoAdocao(id_animal);
 CREATE INDEX idx_pedido_adotante ON pedidoAdocao(id_adotante);
 
 -- =====================================================================
--- B6 — Gatilhos e auditoria
+-- ETAPA 2:B6 — Gatilhos e auditoria
 -- =====================================================================
 
 -- -----------------------------------------------------

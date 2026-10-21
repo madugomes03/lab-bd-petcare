@@ -37,6 +37,8 @@ repositorio/
 │   ├── 03_consultas.sql
 │   ├── 04_views.sql
 │   └── 05_indices.sql
+|   └── 06_teste_auditoria
+|   └── B5_seguranca_controle
 └── app/                  (aplicação Flask — Etapa 2)
     ├── app.py
     ├── db.py
@@ -70,7 +72,9 @@ Execute os scripts da pasta `sql/` nesta ordem:
 | 2 | `02_carga.sql` | Insere os dados fictícios |
 | 3 | `04_views.sql` | Cria a visão `vw_relatorio_ong`, usada pela aplicação |
 | 4 | `05_indices.sql` | Cria os índices adotados após os estudos de `EXPLAIN` (B4) |
-| — | `03_consultas.sql` | Executa as 15 consultas de verificação (pode ser rodado a qualquer momento depois do passo 2) |
+| 5 | `03_consultas.sql` | Executa as 15 consultas de verificação (pode ser rodado a qualquer momento depois do passo 2) |
+| 6 | `B5_seguranca_controle` |  |
+| 7 | `06_teste_auditoria` |  |
 
 > **Atenção:** o `01_ddl.sql` começa com `DROP DATABASE IF EXISTS petcare_db;`, então o banco é apagado e recriado a cada execução. Não o execute com o banco em uso se não quiser perder os dados.
 

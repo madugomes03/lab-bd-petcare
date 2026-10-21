@@ -26,7 +26,7 @@ Gestão de ONGs de proteção e adoção animal. Cadastro de animais resgatados,
 | Etapa | Artefatos | Onde está |
 |---|---|---|
 | 1 — Projeto e construção do banco | Escopo e regras de negócio (RN01–RN28), MER conceitual, dicionário de dados, modelo lógico, normalização, DDL, carga e 15 consultas | `docs/` e `sql/01` a `sql/03` |
-| 2 — Operação, interface e desempenho | Aplicação Flask (B1/B2), transações e concorrência (B3), índices (B4), perfis de acesso e senhas com hash e sal (B5), gatilhos de auditoria (B6), projeto físico (B7) | `app/`, `sql/04` a `sql/06`, `sql/B5_seguranca_controle.sql` e `docs/relatorio-final.pdf` |
+| 2 — Operação, interface e desempenho | Aplicação Flask, transações e concorrência, índices, perfis de acesso e senhas com hash e sal, gatilhos de auditoria, projeto físico | `app/`, `sql/04` a `sql/06`, `sql/B5_seguranca_controle.sql` e `docs/relatorio-final.pdf` |
 
 ## Estrutura do repositório
 
